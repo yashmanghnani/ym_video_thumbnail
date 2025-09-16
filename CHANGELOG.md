@@ -1,4 +1,4 @@
 
-## 0.0.1
+## 0.0.2
 
 * initial release for this flutter plugin.

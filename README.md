@@ -23,7 +23,7 @@ Warning:
 add [ym_video_thumbnail](https://pub.dev/packages/ym_video_thumbnail) as a dependency in your pubspec.yaml file.
 ```yaml
 dependencies:
-  ym_video_thumbnail: ^0.0.1
+  ym_video_thumbnail: ^0.0.2
 ```
 **import**
 ```dart
