@@ -29,7 +29,7 @@ dependencies:
 Then import the API:
 
 ```dart
-import 'package:ym_video_thumbnail/video_thumbnail.dart';
+import 'package:ym_video_thumbnail/ym_video_thumbnail.dart';
 ```
 
 ## Generate thumbnail bytes

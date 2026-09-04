@@ -5,7 +5,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'dart:io';
 
-import 'package:ym_video_thumbnail/video_thumbnail.dart';
+import 'package:ym_video_thumbnail/ym_video_thumbnail.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;

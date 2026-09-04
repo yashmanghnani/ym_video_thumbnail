@@ -2,7 +2,7 @@
 
 /// The Flutter plugin for creating thumbnails from video files and URLs.
 ///
-/// To use, import `package:ym_video_thumbnail/video_thumbnail.dart`.
+/// To use, import `package:ym_video_thumbnail/ym_video_thumbnail.dart`.
 library;
 
 import 'package:flutter/services.dart';
