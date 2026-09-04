@@ -15,13 +15,11 @@ void main() => runApp(const MyApp());
 
 /// Root widget of the application.
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: DemoHome(),
-    );
+    return const MaterialApp(home: DemoHome());
   }
 }
 
@@ -46,7 +44,13 @@ class ThumbnailRequest {
   });
 
   /// Validates the request parameters.
-  bool get isValid => video.isNotEmpty && maxHeight >= 0 && maxWidth >= 0 && timeMs >= 0 && quality >= 0 && quality <= 100;
+  bool get isValid =>
+      video.isNotEmpty &&
+      maxHeight >= 0 &&
+      maxWidth >= 0 &&
+      timeMs >= 0 &&
+      quality >= 0 &&
+      quality <= 100;
 }
 
 /// Data class representing the result of thumbnail generation.
@@ -68,7 +72,9 @@ class ThumbnailResult {
 class ThumbnailService {
   /// Generates a thumbnail based on the request.
   /// Handles both file and data generation with proper error handling.
-  static Future<ThumbnailResult> generateThumbnail(ThumbnailRequest request) async {
+  static Future<ThumbnailResult> generateThumbnail(
+    ThumbnailRequest request,
+  ) async {
     if (!request.isValid) {
       throw ArgumentError('Invalid thumbnail request parameters');
     }
@@ -78,7 +84,10 @@ class ThumbnailService {
     try {
       if (request.thumbnailPath != null) {
         // Generate file thumbnail with unique name
-        final uniquePath = _generateUniqueFilePath(request.thumbnailPath!, request.imageFormat);
+        final uniquePath = _generateUniqueFilePath(
+          request.thumbnailPath!,
+          request.imageFormat,
+        );
         final thumbnailPath = await VideoThumbnail.thumbnailFile(
           video: request.video,
           headers: const {
@@ -101,13 +110,17 @@ class ThumbnailService {
 
         final file = File(thumbnailPath);
         if (!await file.exists()) {
-          throw FileSystemException('Generated file does not exist', thumbnailPath);
+          throw FileSystemException(
+            'Generated file does not exist',
+            thumbnailPath,
+          );
         }
 
         bytes = await file.readAsBytes();
       } else {
         // Generate data thumbnail
-        bytes = await VideoThumbnail.thumbnailData(
+        bytes =
+            await VideoThumbnail.thumbnailData(
               video: request.video,
               headers: const {
                 "USERHEADER1": "user defined header1",
@@ -128,18 +141,32 @@ class ThumbnailService {
       final image = Image.memory(bytes);
       final completer = Completer<ThumbnailResult>();
 
-      image.image.resolve(ImageConfiguration()).addListener(
-        ImageStreamListener((ImageInfo info, bool _) {
-          completer.complete(ThumbnailResult(
-            image: image,
-            dataSize: imageDataSize,
-            height: info.image.height,
-            width: info.image.width,
-          ));
-        }),
+      final imageStream = image.image.resolve(const ImageConfiguration());
+      late final ImageStreamListener listener;
+      listener = ImageStreamListener(
+        (ImageInfo info, bool _) {
+          imageStream.removeListener(listener);
+          if (!completer.isCompleted) {
+            completer.complete(
+              ThumbnailResult(
+                image: image,
+                dataSize: imageDataSize,
+                height: info.image.height,
+                width: info.image.width,
+              ),
+            );
+          }
+        },
+        onError: (Object error, StackTrace? stackTrace) {
+          imageStream.removeListener(listener);
+          if (!completer.isCompleted) {
+            completer.completeError(error, stackTrace);
+          }
+        },
       );
+      imageStream.addListener(listener);
 
-      return completer.future;
+      return await completer.future;
     } catch (e) {
       debugPrint('Error generating thumbnail: $e');
       rethrow;
@@ -148,11 +175,11 @@ class ThumbnailService {
 
   /// Generates a unique file path for thumbnail files.
   static String _generateUniqueFilePath(String directory, ImageFormat format) {
-    final extension = format == ImageFormat.JPEG
+    final extension = format == ImageFormat.jpeg
         ? 'jpg'
-        : format == ImageFormat.PNG
-            ? 'png'
-            : 'webp';
+        : format == ImageFormat.png
+        ? 'png'
+        : 'webp';
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final random = math.Random().nextInt(10000);
     return path.join(directory, 'thumbnail_${timestamp}_$random.$extension');
@@ -163,21 +190,46 @@ class ThumbnailService {
 class ThumbnailDisplay extends StatefulWidget {
   final ThumbnailRequest? thumbnailRequest;
 
-  const ThumbnailDisplay({Key? key, this.thumbnailRequest}) : super(key: key);
+  const ThumbnailDisplay({super.key, this.thumbnailRequest});
 
   @override
   State<ThumbnailDisplay> createState() => _ThumbnailDisplayState();
 }
 
 class _ThumbnailDisplayState extends State<ThumbnailDisplay> {
+  Future<ThumbnailResult>? _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateFuture();
+  }
+
+  @override
+  void didUpdateWidget(covariant ThumbnailDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.thumbnailRequest != widget.thumbnailRequest) {
+      _updateFuture();
+    }
+  }
+
+  void _updateFuture() {
+    final request = widget.thumbnailRequest;
+    _future = request == null
+        ? null
+        : ThumbnailService.generateThumbnail(request);
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (widget.thumbnailRequest == null) {
+    final request = widget.thumbnailRequest;
+    final future = _future;
+    if (request == null || future == null) {
       return const SizedBox.shrink();
     }
 
     return FutureBuilder<ThumbnailResult>(
-      future: ThumbnailService.generateThumbnail(widget.thumbnailRequest!),
+      future: future,
       builder: (BuildContext context, AsyncSnapshot<ThumbnailResult> snapshot) {
         if (snapshot.hasData) {
           final data = snapshot.data!;
@@ -186,7 +238,7 @@ class _ThumbnailDisplayState extends State<ThumbnailDisplay> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Text(
-                "Image ${widget.thumbnailRequest!.thumbnailPath == null ? 'data' : 'file'} size: ${data.dataSize} bytes, width: ${data.width}, height: ${data.height}",
+                "Image ${request.thumbnailPath == null ? 'data' : 'file'} size: ${data.dataSize} bytes, width: ${data.width}, height: ${data.height}",
                 textAlign: TextAlign.center,
               ),
               const Divider(color: Colors.grey, thickness: 1.0),
@@ -220,7 +272,7 @@ class _ThumbnailDisplayState extends State<ThumbnailDisplay> {
 
 /// Main demo home screen widget.
 class DemoHome extends StatefulWidget {
-  const DemoHome({Key? key}) : super(key: key);
+  const DemoHome({super.key});
 
   @override
   State<DemoHome> createState() => _DemoHomeState();
@@ -229,9 +281,10 @@ class DemoHome extends StatefulWidget {
 class _DemoHomeState extends State<DemoHome> {
   final FocusNode _editNode = FocusNode();
   final TextEditingController _videoController = TextEditingController(
-    text: "https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4",
+    text:
+        "https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4",
   );
-  ImageFormat _format = ImageFormat.JPEG;
+  ImageFormat _format = ImageFormat.jpeg;
   int _quality = 50;
   int _sizeH = 0;
   int _sizeW = 0;
@@ -256,9 +309,8 @@ class _DemoHomeState extends State<DemoHome> {
   Future<void> _initializeTempDir() async {
     try {
       final dir = await getTemporaryDirectory();
-      setState(() {
-        _tempDir = dir.path;
-      });
+      if (!mounted) return;
+      setState(() => _tempDir = dir.path);
     } catch (e) {
       debugPrint('Error getting temporary directory: $e');
       // Fallback to null, user will see error
@@ -309,15 +361,17 @@ class _DemoHomeState extends State<DemoHome> {
     try {
       final XFile? video = await ImagePicker().pickVideo(source: source);
       if (video != null) {
+        if (!mounted) return;
         setState(() {
           _videoController.text = video.path;
         });
       }
     } catch (e) {
       debugPrint('Error picking video: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking video: $e')),
-      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error picking video: $e')));
     }
   }
 
@@ -326,10 +380,10 @@ class _DemoHomeState extends State<DemoHome> {
       // Height Slider
       Slider(
         value: _sizeH.toDouble(),
-        onChanged: (v) => setState(() {
-          _sizeH = v.toInt();
-          _unfocusAndUpdate();
-        }),
+        onChanged: (v) {
+          setState(() => _sizeH = v.toInt());
+          _editNode.unfocus();
+        },
         max: 256.0,
         divisions: 256,
         label: "$_sizeH",
@@ -345,10 +399,10 @@ class _DemoHomeState extends State<DemoHome> {
       // Width Slider
       Slider(
         value: _sizeW.toDouble(),
-        onChanged: (v) => setState(() {
-          _sizeW = v.toInt();
-          _unfocusAndUpdate();
-        }),
+        onChanged: (v) {
+          setState(() => _sizeW = v.toInt());
+          _editNode.unfocus();
+        },
         max: 256.0,
         divisions: 256,
         label: "$_sizeW",
@@ -364,29 +418,27 @@ class _DemoHomeState extends State<DemoHome> {
       // Time Slider
       Slider(
         value: _timeMs.toDouble(),
-        onChanged: (v) => setState(() {
-          _timeMs = v.toInt();
-          _unfocusAndUpdate();
-        }),
+        onChanged: (v) {
+          setState(() => _timeMs = v.toInt());
+          _editNode.unfocus();
+        },
         max: 10.0 * 1000,
         divisions: 1000,
         label: "$_timeMs",
       ),
       Center(
         child: Text(
-          _timeMs == 0
-              ? "Beginning of the video"
-              : "Frame at $_timeMs ms",
+          _timeMs == 0 ? "Beginning of the video" : "Frame at $_timeMs ms",
         ),
       ),
 
       // Quality Slider
       Slider(
         value: _quality.toDouble(),
-        onChanged: (v) => setState(() {
-          _quality = v.toInt();
-          _unfocusAndUpdate();
-        }),
+        onChanged: (v) {
+          setState(() => _quality = v.toInt());
+          _editNode.unfocus();
+        },
         max: 100.0,
         divisions: 100,
         label: "$_quality",
@@ -403,30 +455,37 @@ class _DemoHomeState extends State<DemoHome> {
             isDense: true,
             labelText: "Thumbnail Format",
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              for (final format in [ImageFormat.JPEG, ImageFormat.PNG, ImageFormat.WEBP])
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Radio<ImageFormat>(
-                      groupValue: _format,
-                      value: format,
-                      onChanged: (v) => setState(() {
-                        _format = v!;
-                        _unfocusAndUpdate();
-                      }),
-                    ),
-                    Text(format == ImageFormat.JPEG
-                        ? "JPEG"
-                        : format == ImageFormat.PNG
+          child: RadioGroup<ImageFormat>(
+            groupValue: _format,
+            onChanged: (value) {
+              if (value == null) return;
+              setState(() => _format = value);
+              _editNode.unfocus();
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                for (final format in [
+                  ImageFormat.jpeg,
+                  ImageFormat.png,
+                  ImageFormat.webp,
+                ])
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Radio<ImageFormat>(value: format),
+                      Text(
+                        format == ImageFormat.jpeg
+                            ? "JPEG"
+                            : format == ImageFormat.png
                             ? "PNG"
-                            : "WebP"),
-                  ],
-                ),
-            ],
+                            : "WebP",
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -438,9 +497,7 @@ class _DemoHomeState extends State<DemoHome> {
     final settings = _buildSettings();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Thumbnail Plugin Example'),
-      ),
+      appBar: AppBar(title: const Text('Thumbnail Plugin Example')),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,

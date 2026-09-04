@@ -1,24 +1,25 @@
 name: video_thumbnail_example
-description: Demonstrates how to use the video_thumbnail plugin.
-version: 0.1.7
+description: Demonstrates how to use the ym_video_thumbnail plugin.
+version: 1.0.0+1
 publish_to: 'none'
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"      
-  flutter: ">=3.29.3"
+  sdk: ">=3.9.0 <4.0.0"
+  flutter: ">=3.35.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  image_picker: ^1.2.0
-  path_provider: ^2.1.5
+  image_picker: ^1.2.3
+  path: ^1.9.1
+  path_provider: ^2.1.6
+  ym_video_thumbnail:
+    path: ../
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  ym_video_thumbnail:
-    path: ../
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
