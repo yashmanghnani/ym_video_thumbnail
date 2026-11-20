@@ -1,3 +1,13 @@
+## 2.0.0
+
+* Raised the minimum SDK versions to Flutter 3.50.1 and Dart 3.14.0.
+* Updated Android tooling to AGP 9.3.1 and Gradle 9.5.0.
+* Migrated the example to `material_ui` and updated its image picker.
+* Migrated the iOS example to the UIScene lifecycle.
+* Fixed iOS decoding of percent-encoded `file://` video URLs.
+* Fixed iOS thumbnail generation when only one dimension is specified.
+* Fixed Android thumbnail generation when scaling rounded a dimension to zero.
+
 ## 1.0.0
 
 * Updated package metadata and documentation for the 1.0.0 release.

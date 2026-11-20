@@ -144,9 +144,6 @@ static NSString *const YMVideoThumbnailChannelName =
 }
 
 + (NSURL *)URLForVideoString:(NSString *)video {
-    if ([video hasPrefix:@"file://"]) {
-        return [NSURL fileURLWithPath:[video substringFromIndex:7]];
-    }
     if ([video hasPrefix:@"/"]) {
         return [NSURL fileURLWithPath:video];
     }
@@ -195,11 +192,7 @@ static NSString *const YMVideoThumbnailChannelName =
     AVAssetImageGenerator *imageGenerator =
         [[AVAssetImageGenerator alloc] initWithAsset:asset];
     imageGenerator.appliesPreferredTrackTransform = YES;
-    if (maxHeight > 0 || maxWidth > 0) {
-        imageGenerator.maximumSize = CGSizeMake(
-            maxWidth > 0 ? (CGFloat)maxWidth : CGFLOAT_MAX,
-            maxHeight > 0 ? (CGFloat)maxHeight : CGFLOAT_MAX);
-    }
+    imageGenerator.maximumSize = CGSizeMake(maxWidth, maxHeight);
     imageGenerator.requestedTimeToleranceBefore = kCMTimeZero;
     imageGenerator.requestedTimeToleranceAfter = CMTimeMake(100, 1000);
 

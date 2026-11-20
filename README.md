@@ -10,20 +10,22 @@ an image widget or a thumbnail file for upload, caching, or sharing.
 
 ## Requirements
 
-- Flutter 3.35.0 or newer
-- Dart 3.9.0 or newer
+- Flutter 3.50.1 or newer
+- Dart 3.14.0 or newer
 - Android API 24 or newer
 - iOS 15.0 or newer
 
 The native implementation uses Android `MediaMetadataRetriever` and iOS
 `AVAssetImageGenerator`. The video must use a format supported by the target
-platform.
+platform. The Android example builds with AGP 9.3.1, Gradle 9.5.0, and
+Android SDK 36. The iOS plugin uses CocoaPods. The example uses the UIScene
+lifecycle.
 
 ## Install
 
 ```yaml
 dependencies:
-  ym_video_thumbnail: ^1.0.0
+  ym_video_thumbnail: ^2.0.0
 ```
 
 Then import the API:
@@ -60,9 +62,9 @@ final String? thumbnailPath = await VideoThumbnail.thumbnailFile(
 ```
 
 When `thumbnailPath` is omitted, local videos are written beside the source
-video and remote videos are written to the platform cache directory. A path
-ending in `.jpg`, `.png`, or `.webp` is treated as a complete filename;
-otherwise it is treated as a directory.
+video and remote videos are written to the platform cache directory. An output
+path is treated as a complete filename when its extension matches the selected
+format (`.jpg`, `.png`, or `.webp`). Other paths are treated as directories.
 
 ## API
 
@@ -84,7 +86,13 @@ Returns `Future<String?>` and accepts the same options plus `thumbnailPath`.
 If both dimensions are non-zero, Android may use the exact requested width and
 height. To preserve aspect ratio consistently, provide only one dimension.
 
-## Migration from pre-1.0 releases
+## Migration
+
+Version 2 requires Flutter 3.50.1 and Dart 3.14.0 or newer. Use the 1.x
+constraint for projects that need an older SDK. Existing thumbnail calls
+require no source changes.
+
+### From pre-1.0 releases
 
 The original uppercase enum names remain available as deprecated aliases:
 

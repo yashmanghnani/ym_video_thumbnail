@@ -200,10 +200,10 @@ public final class VideoThumbnailPlugin implements FlutterPlugin, MethodCallHand
             final int sourceWidth = bitmap.getWidth();
             final int sourceHeight = bitmap.getHeight();
             final int width = targetWidth == 0
-                    ? Math.round((float) targetHeight * sourceWidth / sourceHeight)
+                    ? Math.max(1, Math.round((float) targetHeight * sourceWidth / sourceHeight))
                     : targetWidth;
             final int height = targetHeight == 0
-                    ? Math.round((float) targetWidth * sourceHeight / sourceWidth)
+                    ? Math.max(1, Math.round((float) targetWidth * sourceHeight / sourceWidth))
                     : targetHeight;
             final Bitmap scaled = Bitmap.createScaledBitmap(bitmap, width, height, true);
             if (scaled != bitmap) {

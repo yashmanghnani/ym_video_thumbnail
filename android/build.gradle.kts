@@ -1,5 +1,5 @@
 group = "xyz.justsoft.video_thumbnail"
-version = "1.0.0"
+version = "2.0.0"
 
 buildscript {
     repositories {
@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:9.1.0")
+        classpath("com.android.tools.build:gradle:9.3.1")
     }
 }
 

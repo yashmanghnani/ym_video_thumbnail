@@ -1,14 +1,13 @@
 import 'dart:async';
-import 'dart:typed_data';
-import 'dart:math' as math;
-
-import 'package:flutter/material.dart';
 import 'dart:io';
+import 'dart:math' as math;
+import 'dart:typed_data';
 
-import 'package:ym_video_thumbnail/ym_video_thumbnail.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:ym_video_thumbnail/ym_video_thumbnail.dart';
 
 /// Main entry point of the application.
 void main() => runApp(const MyApp());
@@ -156,6 +155,7 @@ class ThumbnailService {
               ),
             );
           }
+          info.dispose();
         },
         onError: (Object error, StackTrace? stackTrace) {
           imageStream.removeListener(listener);
@@ -281,8 +281,7 @@ class DemoHome extends StatefulWidget {
 class _DemoHomeState extends State<DemoHome> {
   final FocusNode _editNode = FocusNode();
   final TextEditingController _videoController = TextEditingController(
-    text:
-        "https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4",
+    text: "https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4",
   );
   ImageFormat _format = ImageFormat.jpeg;
   int _quality = 50;
@@ -369,9 +368,8 @@ class _DemoHomeState extends State<DemoHome> {
     } catch (e) {
       debugPrint('Error picking video: $e');
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error picking video: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error picking video: $e')));
     }
   }
 

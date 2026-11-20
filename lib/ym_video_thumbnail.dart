@@ -33,8 +33,8 @@ class VideoThumbnail {
   /// [video] may be a local path, a `file://` URI, or a URL supported by the
   /// platform's native video decoder. If [thumbnailPath] is omitted, local
   /// videos are written beside the source and remote videos are written to the
-  /// platform cache directory. A path ending in the expected extension is
-  /// treated as a file; all other paths are treated as directories.
+  /// platform cache directory. A path ending in the selected format's
+  /// extension is treated as a file. Other paths are treated as directories.
   ///
   /// Set either dimension to zero to preserve the source aspect ratio. Quality
   /// is an integer from 0 to 100 and is ignored for PNG output.

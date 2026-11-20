@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'ym_video_thumbnail'
-  s.version          = '1.0.0'
+  s.version          = '2.0.0'
   s.summary          = 'Generate video thumbnails on Android and iOS.'
   s.description      = <<-DESC
 Generate image thumbnails from local video files and remote video URLs.
